@@ -1,0 +1,28 @@
+{
+	"extends": "@ringieraxelspringer/tsconfig",
+	"compilerOptions": {
+		"allowJs": true,
+		"jsx": "react",
+		"outDir": "./dist",
+		"rootDir": "./src",
+		"typeRoots": [
+			"./node_modules/@types"
+		],
+		// Additional configuration for migration process
+		"noImplicitAny": false,
+		"noImplicitReturns": false,
+		"noImplicitThis": false,
+		"skipLibCheck": true,
+		"forceConsistentCasingInFileNames": true,
+		"strictPropertyInitialization": false,
+		"noUnusedParameters": false,
+		"noUnusedLocals": false,
+		"resolveJsonModule": true,
+		"lib": [
+			"dom"
+		]
+	},
+	"include": [
+		"./src",
+	]
+}

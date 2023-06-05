@@ -1,0 +1,50 @@
+{
+	"name": "hat-server",
+	"version": "0.0.25",
+	"description": "Head App Template - server",
+	"license": "MIT",
+	"repository": {},
+	"main": "dist/index.js",
+	"module": "dist/index.js",
+	"source": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"engines": {
+		"node": "^16"
+	},
+	"private": false,
+	"dependencies": {
+		"@ringieraxelspringer/tsconfig": "^4.0.0",
+		"@ringpublishing/graphql-api-client": "^2.0.0",
+		"@types/http-server": "^0.12.1",
+		"@types/node": "*",
+		"graphql-tag": "^2.12.6",
+		"next": "13.2.4",
+		"react": "18.2.0",
+		"react-dom": "18.2.0"
+	},
+	"devDependencies": {
+		"typescript": "~4.7.4",
+		"node-mocks-http": "^1.12.1",
+		"ts-jest": "^29.0.3",
+		"jest": "^29.3.1",
+		"@types/jest": "^29.2.4",
+		"@jest/globals": "^29.3.1"
+	},
+	"scripts": {
+		"build": "tsc --jsx react-jsx",
+		"run": "tsc -w --jsx react-jsx -p .",
+		"test": "jest --no-cache --detectOpenHandles --runInBand --forceExit",
+		"test-watch": "jest --watchAll --no-cache --detectOpenHandles --runInBand --forceExit"
+	},
+	"jest": {
+		"preset": "ts-jest",
+		"testEnvironment": "node",
+		"transform": {
+			"^.+\\.ts?$": "ts-jest"
+		},
+		"transformIgnorePatterns": [
+			",<rootDir>/node_modules/"
+		],
+		"clearMocks": true
+	}
+}
