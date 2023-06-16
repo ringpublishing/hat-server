@@ -1,9 +1,12 @@
 {
 	"name": "@ringpublishing/hat-server",
-	"version": "0.0.25",
+	"version": "1.0.0",
 	"description": "Head App Template - server",
 	"license": "MIT",
-	"repository": {},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/ringpublishing/hat-server.git"
+	},
 	"main": "dist/index.js",
 	"module": "dist/index.js",
 	"source": "dist/index.js",
