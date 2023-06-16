@@ -1,5 +1,5 @@
 {
-	"name": "hat-server",
+	"name": "@ringpublishing/hat-server",
 	"version": "0.0.25",
 	"description": "Head App Template - server",
 	"license": "MIT",
