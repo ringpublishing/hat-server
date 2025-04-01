@@ -274,7 +274,7 @@ export class BootServer {
                         query: this._prepareCustomGraphQLQueryToWebsiteAPIHook(url, variant),
                         fetchPolicy: 'no-cache'
                     });
-                    this.cacheProvider.set(cacheKey, newResponse, this.cacheProvider.getTTL(cacheKey), ['url_/' + pubId]);
+                    this.cacheProvider.set(cacheKey, newResponse, this.cacheProvider.getTTL(cacheKey), ['pubId_' + pubId]);
                 });
             } else {
                 response = await global.websitesApiApolloClient.query({
@@ -282,7 +282,7 @@ export class BootServer {
                     fetchPolicy: 'no-cache'
                 }) as ApolloQueryResult<DefaultHatSite>;
                 if (!this.use304Functionality) {
-                    this.cacheProvider.set(cacheKey, response, this.cacheProvider.getTTL(cacheKey), ['url_/' + pubId]);
+                    this.cacheProvider.set(cacheKey, response, this.cacheProvider.getTTL(cacheKey), ['pubId_' + pubId]);
                 }
 
             }
