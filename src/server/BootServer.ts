@@ -245,6 +245,8 @@ export class BootServer {
 
     async _applyWebsiteAPILogic(pathname, req, res, hatControllerParamsInstance, variant: string) {
         let responseEnded = false;
+        const arrUrl = pathname.url.split('/');
+        const pubId = arrUrl[arrUrl.length - 1];
 
         if (this._shouldMakeRequestToWebsiteAPIOnThisRequestHook(req)) {
             if (!global.websitesApiApolloClient) {
@@ -272,7 +274,7 @@ export class BootServer {
                         query: this._prepareCustomGraphQLQueryToWebsiteAPIHook(url, variant),
                         fetchPolicy: 'no-cache'
                     });
-                    this.cacheProvider.set(cacheKey, newResponse, this.cacheProvider.getTTL(cacheKey), ['url_' + pathname]);
+                    this.cacheProvider.set(cacheKey, newResponse, this.cacheProvider.getTTL(cacheKey), ['url_/' + pubId]);
                 });
             } else {
                 response = await global.websitesApiApolloClient.query({
@@ -280,7 +282,7 @@ export class BootServer {
                     fetchPolicy: 'no-cache'
                 }) as ApolloQueryResult<DefaultHatSite>;
                 if (!this.use304Functionality) {
-                    this.cacheProvider.set(cacheKey, response, this.cacheProvider.getTTL(cacheKey), ['url_' + pathname]);
+                    this.cacheProvider.set(cacheKey, response, this.cacheProvider.getTTL(cacheKey), ['url_/' + pubId]);
                 }
 
             }
