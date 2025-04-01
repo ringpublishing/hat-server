@@ -245,7 +245,7 @@ export class BootServer {
 
     async _applyWebsiteAPILogic(pathname, req, res, hatControllerParamsInstance, variant: string) {
         let responseEnded = false;
-        const arrUrl = pathname.url.split('/');
+        const arrUrl = pathname.split('/');
         const pubId = arrUrl[arrUrl.length - 1];
 
         if (this._shouldMakeRequestToWebsiteAPIOnThisRequestHook(req)) {
