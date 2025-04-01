@@ -167,7 +167,7 @@ export type Scalars = {
 }
 
 export interface CacheService {
-    set(key: any, value: any, TTL: null | number | undefined): void;
+    set(key: any, value: any, TTL: null | number | undefined, tags: string[] | null | boolean): void;
     get(key: any): any;
     runCallbackIfTimeStampHasExpired(key: any, callback: Function): void;
     getTTL(key): number;

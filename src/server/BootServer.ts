@@ -164,7 +164,7 @@ export class BootServer {
 
         if (this.use304Functionality) {
             const use304FunctionalityRes = this.apply304Functionality(req, res, hatControllerParamsInstance);
-            if(use304FunctionalityRes && use304FunctionalityRes.responseToReturn){
+            if (use304FunctionalityRes && use304FunctionalityRes.responseToReturn) {
                 return {responseToReturn: use304FunctionalityRes.responseToReturn};
             }
         }
@@ -217,7 +217,7 @@ export class BootServer {
 
         let response = new Response();
         const _requestListenerRes = await this._requestListener(context.request, response);
-        if(_requestListenerRes && _requestListenerRes.responseToReturn){
+        if (_requestListenerRes && _requestListenerRes.responseToReturn) {
             return {responseToReturn: _requestListenerRes.responseToReturn};
         }
         return response;
@@ -272,7 +272,7 @@ export class BootServer {
                         query: this._prepareCustomGraphQLQueryToWebsiteAPIHook(url, variant),
                         fetchPolicy: 'no-cache'
                     });
-                    this.cacheProvider.set(cacheKey, newResponse, this.cacheProvider.getTTL(cacheKey));
+                    this.cacheProvider.set(cacheKey, newResponse, this.cacheProvider.getTTL(cacheKey), ['url_' + pathname]);
                 });
             } else {
                 response = await global.websitesApiApolloClient.query({
@@ -280,7 +280,7 @@ export class BootServer {
                     fetchPolicy: 'no-cache'
                 }) as ApolloQueryResult<DefaultHatSite>;
                 if (!this.use304Functionality) {
-                    this.cacheProvider.set(cacheKey, response, this.cacheProvider.getTTL(cacheKey));
+                    this.cacheProvider.set(cacheKey, response, this.cacheProvider.getTTL(cacheKey), ['url_' + pathname]);
                 }
 
             }
