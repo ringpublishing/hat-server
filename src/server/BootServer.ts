@@ -21,6 +21,7 @@ const WEBSITE_API_SECRET = process.env.WEBSITE_API_SECRET!;
 const WEBSITE_API_NAMESPACE_ID = process.env.WEBSITE_API_NAMESPACE_ID!;
 const NEXT_PUBLIC_WEBSITE_DOMAIN = process.env.NEXT_PUBLIC_WEBSITE_DOMAIN!;
 const NEXT_PUBLIC_WEBSITE_API_VARIANT = process.env.NEXT_PUBLIC_WEBSITE_API_VARIANT!;
+const HAT_SERVER_WEBSITE_API_TTL = Number(process.env.HAT_SERVER_WEBSITE_API_TTL) || 60;
 // process.argv[3] -> cde app start support
 const cdePort = Number(process.argv[3]);
 const PORT = process.env.PORT || cdePort || 4321;
@@ -270,19 +271,25 @@ export class BootServer {
 
             if (response) {
                 this.cacheProvider.runCallbackIfTimeStampHasExpired(cacheKey, async () => {
+                    if(global['monitoringProvider'] && global['monitoringProvider'].counter) {
+                        global['monitoringProvider'].counter('info.HatServer_applyWebsiteAPILogic.apiCall');
+                    }
                     const newResponse = await global.websitesApiApolloClient.query({
                         query: this._prepareCustomGraphQLQueryToWebsiteAPIHook(url, variant),
                         fetchPolicy: 'no-cache'
                     });
-                    this.cacheProvider.set(cacheKey, newResponse, this.cacheProvider.getTTL(cacheKey), ['pubId_' + pubId]);
+                    this.cacheProvider.set(cacheKey, newResponse, HAT_SERVER_WEBSITE_API_TTL, ['pubId_' + pubId]);
                 });
             } else {
+                if(global['monitoringProvider'] && global['monitoringProvider'].counter) {
+                    global['monitoringProvider'].counter('info.HatServer_applyWebsiteAPILogic.apiCall');
+                }
                 response = await global.websitesApiApolloClient.query({
                     query: this._prepareCustomGraphQLQueryToWebsiteAPIHook(url, variant),
                     fetchPolicy: 'no-cache'
                 }) as ApolloQueryResult<DefaultHatSite>;
                 if (!this.use304Functionality) {
-                    this.cacheProvider.set(cacheKey, response, this.cacheProvider.getTTL(cacheKey), ['pubId_' + pubId]);
+                    this.cacheProvider.set(cacheKey, response, HAT_SERVER_WEBSITE_API_TTL, ['pubId_' + pubId]);
                 }
 
             }
