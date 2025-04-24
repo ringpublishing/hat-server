@@ -270,19 +270,25 @@ export class BootServer {
 
             if (response) {
                 this.cacheProvider.runCallbackIfTimeStampHasExpired(cacheKey, async () => {
+                    if(global['monitoringProvider'] && global['monitoringProvider'].counter) {
+                        global['monitoringProvider'].counter('info.HatServer_applyWebsiteAPILogic.apiCall');
+                    }
                     const newResponse = await global.websitesApiApolloClient.query({
                         query: this._prepareCustomGraphQLQueryToWebsiteAPIHook(url, variant),
                         fetchPolicy: 'no-cache'
                     });
-                    this.cacheProvider.set(cacheKey, newResponse, this.cacheProvider.getTTL(cacheKey), ['pubId_' + pubId]);
+                    this.cacheProvider.set(cacheKey, newResponse, 60, ['pubId_' + pubId]);
                 });
             } else {
+                if(global['monitoringProvider'] && global['monitoringProvider'].counter) {
+                    global['monitoringProvider'].counter('info.HatServer_applyWebsiteAPILogic.apiCall');
+                }
                 response = await global.websitesApiApolloClient.query({
                     query: this._prepareCustomGraphQLQueryToWebsiteAPIHook(url, variant),
                     fetchPolicy: 'no-cache'
                 }) as ApolloQueryResult<DefaultHatSite>;
                 if (!this.use304Functionality) {
-                    this.cacheProvider.set(cacheKey, response, this.cacheProvider.getTTL(cacheKey), ['pubId_' + pubId]);
+                    this.cacheProvider.set(cacheKey, response, 60, ['pubId_' + pubId]);
                 }
 
             }
