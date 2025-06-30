@@ -22,6 +22,7 @@ const WEBSITE_API_NAMESPACE_ID = process.env.WEBSITE_API_NAMESPACE_ID!;
 const NEXT_PUBLIC_WEBSITE_DOMAIN = process.env.NEXT_PUBLIC_WEBSITE_DOMAIN!;
 const NEXT_PUBLIC_WEBSITE_API_VARIANT = process.env.NEXT_PUBLIC_WEBSITE_API_VARIANT!;
 const HAT_SERVER_WEBSITE_API_TTL = Number(process.env.HAT_SERVER_WEBSITE_API_TTL) || 60;
+const HAT_SERVER_SHOW_URLS_IN_CONSOLE = process.env.HAT_SERVER_SHOW_URLS_IN_CONSOLE || false;
 // process.argv[3] -> cde app start support
 const cdePort = Number(process.argv[3]);
 const PORT = process.env.PORT || cdePort || 4321;
@@ -138,6 +139,9 @@ export class BootServer {
 
         let hatControllerParamsInstance = new HatControllerParams()
         const parsedUrlQuery: UrlWithParsedQuery = parse(req.url, true);
+        if (HAT_SERVER_SHOW_URLS_IN_CONSOLE) {
+            console.info(parsedUrlQuery.href);
+        }
 
         let variant = NEXT_PUBLIC_WEBSITE_API_VARIANT;
 
