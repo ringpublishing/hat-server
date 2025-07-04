@@ -349,6 +349,7 @@ export class BootServer {
     getQuery(url, variantId, dataContent) {
         return gql`
             query {
+                contentSpaceId
                 site (url: "${url}", variantId: "${variantId}") {
                     statusCode,
                     headers {

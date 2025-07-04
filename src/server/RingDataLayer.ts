@@ -12,7 +12,7 @@ export class RingDataLayer {
                 part: 1,
                 source: {
                     system: 'ring_content_space',
-                    id: process.env.WEBSITE_API_NAMESPACE_ID
+                    id: gqlResponse?.data?.contentSpaceId
                 }
             },
             context: {
@@ -21,7 +21,6 @@ export class RingDataLayer {
                 }
             },
         };
-
 
         const id = gqlResponse?.data?.site?.data?.content?.id;
         if (id) {
