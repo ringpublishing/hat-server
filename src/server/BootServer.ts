@@ -11,6 +11,7 @@ import {
 } from "../types";
 import {ApolloQueryResult} from "@apollo/client";
 import {RingDataLayer} from "./RingDataLayer";
+import os from 'os';
 
 export type MiddlewareBeforeResponseToReturn = { responseToReturn: Response };
 
@@ -217,6 +218,16 @@ export class BootServer {
     async applyMiddlewareBefore(context: any, next: any): Promise<MiddlewareBeforeResponse> {
         let responseToReturn = null;
         if (context.url.pathname === this.healthCheckPathname) {
+            const freeMemMB = os.freemem() / 1024 / 1024;
+            // const usedMemoryMB = process.memoryUsage().rss / 1024 / 1024;
+            // const usagePercent = (usedMemoryMB / totalMemoryMB) * 100;
+
+            console.info(`Health check: free memory: ${freeMemMB}MB`);
+            if (freeMemMB < 100) {
+                return {
+                    responseToReturn: new Response('Service Unavailable', { status: 503 })
+                };
+            }
             return {responseToReturn: new Response('ok')};
         }
 
