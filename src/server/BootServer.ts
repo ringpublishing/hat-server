@@ -221,9 +221,8 @@ export class BootServer {
             const freeMemMB = os.freemem() / 1024 / 1024;
             // const usedMemoryMB = process.memoryUsage().rss / 1024 / 1024;
             // const usagePercent = (usedMemoryMB / totalMemoryMB) * 100;
-
-            console.info(`Health check: free memory: ${freeMemMB}MB`);
-            if (freeMemMB < 600) {
+            //console.info(`Health check: free memory: ${freeMemMB}MB`);
+            if (freeMemMB < 100) {
                 return {
                     responseToReturn: new Response('Service Unavailable', { status: 503 })
                 };
