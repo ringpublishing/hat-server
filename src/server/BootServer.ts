@@ -222,7 +222,7 @@ export class BootServer {
             // const usedMemoryMB = process.memoryUsage().rss / 1024 / 1024;
             // const usagePercent = (usedMemoryMB / totalMemoryMB) * 100;
             // console.info(`Health check: free memory: ${freeMemMB}MB`);
-            if (freeMemMB < 200) {
+            if (freeMemMB < 150) {
                 return {
                     responseToReturn: new Response('Memory too low', { status: 503 })
                 };
