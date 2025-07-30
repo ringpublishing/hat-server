@@ -349,6 +349,7 @@ export class BootServer {
 
         const redResp = new Response(null, {status: 301});
         redResp.headers.set('Location', location);
+        redResp.headers.set('Cache-Control', 'max-age=60');
         // @ts-ignore
         res.responseToReturn = redResp;
     }
