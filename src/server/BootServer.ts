@@ -24,6 +24,7 @@ const NEXT_PUBLIC_WEBSITE_DOMAIN = process.env.NEXT_PUBLIC_WEBSITE_DOMAIN!;
 const NEXT_PUBLIC_WEBSITE_API_VARIANT = process.env.NEXT_PUBLIC_WEBSITE_API_VARIANT!;
 const HAT_SERVER_WEBSITE_API_TTL = Number(process.env.HAT_SERVER_WEBSITE_API_TTL) || 60;
 const HAT_SERVER_SHOW_URLS_IN_CONSOLE = process.env.HAT_SERVER_SHOW_URLS_IN_CONSOLE || false;
+const RESPONSE_HEADER_CACHE_CONTROL_MAX_AGE = Number(process.env.RESPONSE_HEADER_CACHE_CONTROL_MAX_AGE) || 60;
 // process.argv[3] -> cde app start support
 const cdePort = Number(process.argv[3]);
 const PORT = process.env.PORT || cdePort || 4321;
@@ -208,7 +209,9 @@ export class BootServer {
         if (revision && etag) {
             res.headers.set('etag', etag);
             if (req.headers.get('if-none-match') == etag) {
-                return {responseToReturn: new Response(null, {status: 304})};
+                return {responseToReturn: new Response(null, {status: 304, headers:{
+                    'Cache-Control': `max-age=${RESPONSE_HEADER_CACHE_CONTROL_MAX_AGE}, public`
+                }})};
             }
         }
 
