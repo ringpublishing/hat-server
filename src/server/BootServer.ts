@@ -146,9 +146,14 @@ export class BootServer {
         }
 
         let variant = NEXT_PUBLIC_WEBSITE_API_VARIANT;
+        let domain = NEXT_PUBLIC_WEBSITE_DOMAIN;
 
         if (req.headers.get('x-websites-config-variant')) {
             variant = req.headers.get('x-websites-config-variant') || '';
+        }
+
+        if (req.headers.get('x-domain')) {
+            domain = req.headers.get('x-domain') || '';
         }
 
         if (req.headers.get('host')) {
@@ -164,7 +169,7 @@ export class BootServer {
         await this._onRequestHook(req, res);
 
         if (this.useWebsitesAPI) {
-            if (await this._applyWebsiteAPILogic(parsedUrlQuery.pathname, req, res, hatControllerParamsInstance, variant)) {
+            if (await this._applyWebsiteAPILogic(parsedUrlQuery.pathname, req, res, hatControllerParamsInstance, variant, domain)) {
                 return;
             }
         }
@@ -187,6 +192,7 @@ export class BootServer {
             hatControllerParamsInstance.urlWithParsedQuery = parsedUrlQuery;
             hatControllerParamsInstance.isMobile = this.isMobile(req);
             hatControllerParamsInstance.websiteManagerVariant = variant;
+            hatControllerParamsInstance.domain = domain;
             hatControllerParamsInstance.ringDataLayer = ringDataLayer;
             // console.log(JSON.stringify(hatControllerParamsInstance));
             //@TODO put into some allowed field
@@ -261,7 +267,7 @@ export class BootServer {
         }
     }
 
-    async _applyWebsiteAPILogic(pathname, req, res, hatControllerParamsInstance, variant: string) {
+    async _applyWebsiteAPILogic(pathname, req, res, hatControllerParamsInstance, variant: string, domain: string) {
         let responseEnded = false;
         const arrUrl = pathname.split('/');
         const pubId = arrUrl[arrUrl.length - 1];
@@ -282,8 +288,8 @@ export class BootServer {
                 perf = performance.now();
             }
 
-            const url = `${NEXT_PUBLIC_WEBSITE_DOMAIN}${pathname}`;
-            const cacheKey = `${NEXT_PUBLIC_WEBSITE_DOMAIN}${pathname}${variant}`;
+            const url = `${domain}${pathname}`;
+            const cacheKey = `${domain}${pathname}${variant}`;
             let response = await this.cacheProvider.get(cacheKey);
 
             if (response) {
@@ -305,6 +311,7 @@ export class BootServer {
                     query: this._prepareCustomGraphQLQueryToWebsiteAPIHook(url, variant),
                     fetchPolicy: 'no-cache'
                 }) as ApolloQueryResult<DefaultHatSite>;
+                console.log(this._prepareCustomGraphQLQueryToWebsiteAPIHook(url, variant))
                 if (!this.use304Functionality) {
                     this.cacheProvider.set(cacheKey, response, HAT_SERVER_WEBSITE_API_TTL, ['pubId_' + pubId]);
                 }
@@ -313,7 +320,7 @@ export class BootServer {
 
 
             if (this.enableDebug) {
-                console.log(`Website API request '${NEXT_PUBLIC_WEBSITE_DOMAIN}${pathname}' for '${variant}' variant took ${performance.now() - perf}ms`)
+                console.log(`Website API request '${domain}${pathname}' for '${variant}' variant took ${performance.now() - perf}ms`)
             }
 
             if (this.useWebsitesAPIRedirects && response.data?.site?.headers?.location && response.data?.site?.statusCode) {
@@ -480,6 +487,7 @@ export class HatControllerParams {
     public urlWithParsedQuery: UrlWithParsedQuery
     public isMobile: boolean
     public websiteManagerVariant: string
+    public domain: string
     public ringDataLayer: any
 };
 
