@@ -74,6 +74,8 @@ export interface DefaultHatControllerParams {
     urlWithParsedQuery: UrlWithParsedQuery
     isMobile: boolean
     websiteManagerVariant: string
+    domain: string
+    ringDataLayer: any
 }
 
 

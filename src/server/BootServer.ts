@@ -311,7 +311,7 @@ export class BootServer {
                     query: this._prepareCustomGraphQLQueryToWebsiteAPIHook(url, variant),
                     fetchPolicy: 'no-cache'
                 }) as ApolloQueryResult<DefaultHatSite>;
-                console.log(this._prepareCustomGraphQLQueryToWebsiteAPIHook(url, variant))
+
                 if (!this.use304Functionality) {
                     this.cacheProvider.set(cacheKey, response, HAT_SERVER_WEBSITE_API_TTL, ['pubId_' + pubId]);
                 }
