@@ -14,10 +14,11 @@
 	"private": false,
 	"dependencies": {
 		"@ringieraxelspringer/tsconfig": "^4.0.0",
-		"@ringpublishing/graphql-api-client": "^3.2.1",
+		"@ringpublishing/graphql-api-client": "^4.2.0",
 		"@types/http-server": "^0.12.1",
 		"@types/node": "*",
-		"graphql-tag": "^2.12.6"
+		"graphql-tag": "^2.12.6",
+        "@apollo/client": "3.12.6"
 	},
 	"devDependencies": {
 		"typescript": "~4.7.4",

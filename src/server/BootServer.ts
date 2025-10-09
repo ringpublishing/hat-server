@@ -12,6 +12,7 @@ import {
 import {ApolloQueryResult} from "@apollo/client";
 import {RingDataLayer} from "./RingDataLayer";
 import os from 'os';
+import {ApolloClient, HttpLink, InMemoryCache} from '@apollo/client/core';
 
 export type MiddlewareBeforeResponseToReturn = { responseToReturn: Response };
 
@@ -215,9 +216,13 @@ export class BootServer {
         if (revision && etag) {
             res.headers.set('etag', etag);
             if (req.headers.get('if-none-match') == etag) {
-                return {responseToReturn: new Response(null, {status: 304, headers:{
-                    'Cache-Control': `max-age=${RESPONSE_HEADER_CACHE_CONTROL_MAX_AGE}, public`
-                }})};
+                return {
+                    responseToReturn: new Response(null, {
+                        status: 304, headers: {
+                            'Cache-Control': `max-age=${RESPONSE_HEADER_CACHE_CONTROL_MAX_AGE}, public`
+                        }
+                    })
+                };
             }
         }
 
@@ -233,7 +238,7 @@ export class BootServer {
             // console.info(`Health check: free memory: ${freeMemMB}MB`);
             if (freeMemMB < 200) {
                 return {
-                    responseToReturn: new Response('Memory too low', { status: 503 })
+                    responseToReturn: new Response('Memory too low', {status: 503})
                 };
             }
             return {responseToReturn: new Response('ok')};
@@ -279,11 +284,19 @@ export class BootServer {
                     secretKey: WEBSITE_API_SECRET,
                     spaceUuid: WEBSITE_API_NAMESPACE_ID
                 }).setTimeout(this.apolloClientTimeout).setApolloClientAdditionalOptions({
-                    defaultOptions:{
-                        watchQuery: { fetchPolicy: "no-cache" },
-                        query: { fetchPolicy: "no-cache" },
+                    queryDeduplication: true,
+                    ssrMode: true,
+                    devtools: {
+                        enabled: false
+                    },
+                    defaultOptions: {
+                        watchQuery: {fetchPolicy: "no-cache"},
+                        query: {fetchPolicy: "no-cache"},
                     }
-                }).buildApolloClient();
+                }).setCache(new InMemoryCache({
+                    resultCaching: false,
+                }))
+                .buildApolloClient();
             }
 
 
@@ -299,7 +312,7 @@ export class BootServer {
 
             if (response) {
                 this.cacheProvider.runCallbackIfTimeStampHasExpired(cacheKey, async () => {
-                    if(global['monitoringProvider'] && global['monitoringProvider'].counter) {
+                    if (global['monitoringProvider'] && global['monitoringProvider'].counter) {
                         global['monitoringProvider'].counter('info.HatServer_applyWebsiteAPILogic.apiCall');
                     }
                     const newResponse = await global.websitesApiApolloClient.query({
@@ -309,7 +322,7 @@ export class BootServer {
                     this.cacheProvider.set(cacheKey, newResponse, HAT_SERVER_WEBSITE_API_TTL, ['pubId_' + pubId]);
                 });
             } else {
-                if(global['monitoringProvider'] && global['monitoringProvider'].counter) {
+                if (global['monitoringProvider'] && global['monitoringProvider'].counter) {
                     global['monitoringProvider'].counter('info.HatServer_applyWebsiteAPILogic.apiCall');
                 }
                 response = await global.websitesApiApolloClient.query({
