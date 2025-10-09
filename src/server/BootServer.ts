@@ -278,7 +278,12 @@ export class BootServer {
                     accessKey: WEBSITE_API_PUBLIC,
                     secretKey: WEBSITE_API_SECRET,
                     spaceUuid: WEBSITE_API_NAMESPACE_ID
-                }).setTimeout(this.apolloClientTimeout).buildApolloClient();
+                }).setTimeout(this.apolloClientTimeout).setApolloClientAdditionalOptions({
+                    defaultOptions:{
+                        watchQuery: { fetchPolicy: "no-cache" },
+                        query: { fetchPolicy: "no-cache" },
+                    }
+                }).buildApolloClient();
             }
 
 
