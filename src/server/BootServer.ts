@@ -1,6 +1,7 @@
 import {parse, UrlWithParsedQuery} from 'url';
 import * as http from "http";
 import {WebsitesApiClientBuilder} from '@ringpublishing/graphql-api-client';
+import {WebsitesApiClient} from '@ringpublishing/graphql-api-client-got';
 import {gql} from 'graphql-tag';
 import {DocumentNode} from 'graphql/language/ast';
 import {
@@ -278,24 +279,11 @@ export class BootServer {
         const pubId = arrUrl[arrUrl.length - 1];
 
         if (this._shouldMakeRequestToWebsiteAPIOnThisRequestHook(req)) {
-                const websitesApiApolloClient = new WebsitesApiClientBuilder({
+                const websitesApiApolloClient = new WebsitesApiClient({
                     accessKey: WEBSITE_API_PUBLIC,
                     secretKey: WEBSITE_API_SECRET,
                     spaceUuid: WEBSITE_API_NAMESPACE_ID
-                }).setTimeout(this.apolloClientTimeout).setApolloClientAdditionalOptions({
-                    queryDeduplication: true,
-                    ssrMode: true,
-                    devtools: {
-                        enabled: false
-                    },
-                    defaultOptions: {
-                        watchQuery: {fetchPolicy: "no-cache"},
-                        query: {fetchPolicy: "no-cache"},
-                    }
-                }).setCache(new InMemoryCache({
-                    resultCaching: false,
-                }))
-                .buildApolloClient();
+                });
 
 
 
@@ -314,20 +302,18 @@ export class BootServer {
                     if (global['monitoringProvider'] && global['monitoringProvider'].counter) {
                         global['monitoringProvider'].counter('info.HatServer_applyWebsiteAPILogic.apiCall');
                     }
-                    const newResponse = await websitesApiApolloClient.query({
-                        query: this._prepareCustomGraphQLQueryToWebsiteAPIHook(url, variant),
-                        fetchPolicy: 'no-cache'
-                    });
+                    const newResponse = await websitesApiApolloClient.query(
+                        this._prepareCustomGraphQLQueryToWebsiteAPIHook(url, variant)
+                        );
                     this.cacheProvider.set(cacheKey, newResponse, HAT_SERVER_WEBSITE_API_TTL, ['pubId_' + pubId]);
                 });
             } else {
                 if (global['monitoringProvider'] && global['monitoringProvider'].counter) {
                     global['monitoringProvider'].counter('info.HatServer_applyWebsiteAPILogic.apiCall');
                 }
-                response = await websitesApiApolloClient.query({
-                    query: this._prepareCustomGraphQLQueryToWebsiteAPIHook(url, variant),
-                    fetchPolicy: 'no-cache'
-                }) as ApolloQueryResult<DefaultHatSite>;
+                response = await websitesApiApolloClient.query(
+                    this._prepareCustomGraphQLQueryToWebsiteAPIHook(url, variant),
+                ) as ApolloQueryResult<DefaultHatSite>;
 
                 if (!this.use304Functionality) {
                     this.cacheProvider.set(cacheKey, response, HAT_SERVER_WEBSITE_API_TTL, ['pubId_' + pubId]);
@@ -335,7 +321,6 @@ export class BootServer {
 
             }
 
-            websitesApiApolloClient.cache.gc();
             if (this.enableDebug) {
                 console.log(`Website API request '${domain}${pathname}' for '${variant}' variant took ${performance.now() - perf}ms`)
             }
