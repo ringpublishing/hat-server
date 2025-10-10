@@ -278,8 +278,7 @@ export class BootServer {
         const pubId = arrUrl[arrUrl.length - 1];
 
         if (this._shouldMakeRequestToWebsiteAPIOnThisRequestHook(req)) {
-            if (!global.websitesApiApolloClient) {
-                global.websitesApiApolloClient = new WebsitesApiClientBuilder({
+                const websitesApiApolloClient = new WebsitesApiClientBuilder({
                     accessKey: WEBSITE_API_PUBLIC,
                     secretKey: WEBSITE_API_SECRET,
                     spaceUuid: WEBSITE_API_NAMESPACE_ID
@@ -297,7 +296,7 @@ export class BootServer {
                     resultCaching: false,
                 }))
                 .buildApolloClient();
-            }
+
 
 
             let perf = 0;
@@ -315,7 +314,7 @@ export class BootServer {
                     if (global['monitoringProvider'] && global['monitoringProvider'].counter) {
                         global['monitoringProvider'].counter('info.HatServer_applyWebsiteAPILogic.apiCall');
                     }
-                    const newResponse = await global.websitesApiApolloClient.query({
+                    const newResponse = await websitesApiApolloClient.query({
                         query: this._prepareCustomGraphQLQueryToWebsiteAPIHook(url, variant),
                         fetchPolicy: 'no-cache'
                     });
@@ -325,7 +324,7 @@ export class BootServer {
                 if (global['monitoringProvider'] && global['monitoringProvider'].counter) {
                     global['monitoringProvider'].counter('info.HatServer_applyWebsiteAPILogic.apiCall');
                 }
-                response = await global.websitesApiApolloClient.query({
+                response = await websitesApiApolloClient.query({
                     query: this._prepareCustomGraphQLQueryToWebsiteAPIHook(url, variant),
                     fetchPolicy: 'no-cache'
                 }) as ApolloQueryResult<DefaultHatSite>;
@@ -336,7 +335,7 @@ export class BootServer {
 
             }
 
-
+            websitesApiApolloClient.cache.gc();
             if (this.enableDebug) {
                 console.log(`Website API request '${domain}${pathname}' for '${variant}' variant took ${performance.now() - perf}ms`)
             }
