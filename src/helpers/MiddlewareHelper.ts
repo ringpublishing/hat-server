@@ -21,20 +21,20 @@ interface MiddlewareEarlyReturnRules {
 }
 
 export async function MiddlewareHelper_processRequest({
-                                                          context,
-                                                          next,
-                                                          MonitoringProvider,
-                                                          bootServerOptions = {},
-                                                          bypassPaths = {},
-                                                          earlyReturnRules
-                                                      }: {
-    context: any;
-    next: () => Promise<any>;
-    MonitoringProvider?: any;
-    bootServerOptions?: any;
-    bypassPaths?: Record<string, string[]>;
-    earlyReturnRules?: MiddlewareEarlyReturnRules;
-}) {
+        context,
+        next,
+        MonitoringProvider,
+        bootServerOptions = {},
+        omitBootServerPaths = {},
+        earlyReturnRules
+    }: {
+        context: any;
+        next: () => Promise<any>;
+        MonitoringProvider?: any;
+        bootServerOptions?: any;
+        omitBootServerPaths?: Record<string, string[]>;
+        earlyReturnRules?: MiddlewareEarlyReturnRules;
+    }) {
     MonitoringProvider && MonitoringProvider.counter('info.middleware.onRequest');
     try {
         const reqUrl = context?.request?.url;
@@ -45,12 +45,7 @@ export async function MiddlewareHelper_processRequest({
                 status: 404,
                 body: 'not found'
             }, ...earlyReturnRules?.extensions || []],
-            queryParamsEquals: [{
-                name: 'page',
-                value: '1',
-                status: 410,
-                body: 'The resource has been permanently removed'
-            }, ...earlyReturnRules?.queryParamsEquals || []],
+            queryParamsEquals: earlyReturnRules?.queryParamsEquals || [],
             pathRegexes: earlyReturnRules?.pathRegexes || []
         }
 
@@ -84,7 +79,7 @@ export async function MiddlewareHelper_processRequest({
             }
         }
 
-        if (bypassPaths[context?.request?.method]?.some((path: string) => context?.request?.url.includes(path))) {
+        if (omitBootServerPaths[context?.request?.method]?.some((path: string) => context?.request?.url.includes(path))) {
             return await next();
         }
 
@@ -104,9 +99,8 @@ export async function MiddlewareHelper_processRequest({
 
         await bootServer.applyMiddlewareAfter(context, response, retResponse);
         MonitoringProvider && MonitoringProvider.counter('info.middleware.applyMiddlewareAfter');
-
-        // @ts-ignore
-        if (!process.env.NODE_ENV !== 'production') {
+        
+        if (process.env.NODE_ENV !== 'production') {
             try {
                 const html = await response.text();
                 if (response.status !== 404) {
