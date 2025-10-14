@@ -315,6 +315,8 @@ export class BootServer {
                     this._prepareCustomGraphQLQueryToWebsiteAPIHook(url, variant),
                 ) as ApolloQueryResult<DefaultHatSite>;
 
+                gql.resetCaches();
+
                 if (!this.use304Functionality) {
                     this.cacheProvider.set(cacheKey, response, HAT_SERVER_WEBSITE_API_TTL, ['pubId_' + pubId]);
                 }
