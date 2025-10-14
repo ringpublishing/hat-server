@@ -99,8 +99,8 @@ export async function MiddlewareHelper_processRequest({
 
         await bootServer.applyMiddlewareAfter(context, response, retResponse);
         MonitoringProvider && MonitoringProvider.counter('info.middleware.applyMiddlewareAfter');
-        
-        if (process.env.NODE_ENV !== 'production') {
+
+        if (process.env.NODE_ENV === 'production') {
             try {
                 const html = await response.text();
                 if (response.status !== 404) {
