@@ -372,7 +372,8 @@ export class BootServer {
      * Returns GraphQl object with nesesery keys.
      */
     getQuery(url, variantId, dataContent) {
-        return gql`
+        // console.log('aaa');
+        return `
             query {
                 contentSpaceId
                 site (url: "${url}", variantId: "${variantId}") {
