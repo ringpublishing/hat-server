@@ -279,11 +279,16 @@ export class BootServer {
         const pubId = arrUrl[arrUrl.length - 1];
 
         if (this._shouldMakeRequestToWebsiteAPIOnThisRequestHook(req)) {
-                const websitesApiApolloClient = new WebsitesApiClient({
+                const websitesApiApolloClient = new WebsitesApiClientBuilder({
                     accessKey: WEBSITE_API_PUBLIC,
                     secretKey: WEBSITE_API_SECRET,
                     spaceUuid: WEBSITE_API_NAMESPACE_ID
-                });
+                }).setApolloClientAdditionalOptions({
+                    defaultOptions:{
+                        watchQuery: { fetchPolicy: "no-cache" },
+                        query: { fetchPolicy: "no-cache" },
+                    }
+                }).buildApolloClient();
 
 
 
@@ -303,7 +308,7 @@ export class BootServer {
                         global['monitoringProvider'].counter('info.HatServer_applyWebsiteAPILogic.apiCall');
                     }
                     const newResponse = await websitesApiApolloClient.query(
-                        this._prepareCustomGraphQLQueryToWebsiteAPIHook(url, variant)
+                        {query: this._prepareCustomGraphQLQueryToWebsiteAPIHook(url, variant), fetchPolicy: "no-cache"}
                         );
                     this.cacheProvider.set(cacheKey, newResponse, HAT_SERVER_WEBSITE_API_TTL, ['pubId_' + pubId]);
                 });
@@ -312,7 +317,7 @@ export class BootServer {
                     global['monitoringProvider'].counter('info.HatServer_applyWebsiteAPILogic.apiCall');
                 }
                 response = await websitesApiApolloClient.query(
-                    this._prepareCustomGraphQLQueryToWebsiteAPIHook(url, variant),
+                    {query: this._prepareCustomGraphQLQueryToWebsiteAPIHook(url, variant), fetchPolicy: "no-cache"}
                 ) as ApolloQueryResult<DefaultHatSite>;
 
                 gql.resetCaches();
