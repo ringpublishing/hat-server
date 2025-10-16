@@ -320,7 +320,7 @@ export class BootServer {
                     {query: this._prepareCustomGraphQLQueryToWebsiteAPIHook(url, variant), fetchPolicy: "no-cache"}
                 ) as ApolloQueryResult<DefaultHatSite>;
 
-                gql.resetCaches();
+
 
                 if (!this.use304Functionality) {
                     this.cacheProvider.set(cacheKey, response, HAT_SERVER_WEBSITE_API_TTL, ['pubId_' + pubId]);
@@ -328,6 +328,7 @@ export class BootServer {
 
             }
 
+            //gql.resetCaches();
             if (this.enableDebug) {
                 console.log(`Website API request '${domain}${pathname}' for '${variant}' variant took ${performance.now() - perf}ms`)
             }
