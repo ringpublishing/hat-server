@@ -284,10 +284,10 @@ export class BootServer {
                     secretKey: WEBSITE_API_SECRET,
                     spaceUuid: WEBSITE_API_NAMESPACE_ID
                 }).setApolloClientAdditionalOptions({
-                    defaultOptions:{
-                        watchQuery: { fetchPolicy: "no-cache" },
-                        query: { fetchPolicy: "no-cache" },
-                    }
+                    // defaultOptions:{
+                    //     watchQuery: { fetchPolicy: "no-cache" },
+                    //     query: { fetchPolicy: "no-cache" },
+                    // }
                 }).buildApolloClient();
 
 
