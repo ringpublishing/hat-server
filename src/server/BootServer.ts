@@ -1,7 +1,6 @@
 import {parse, UrlWithParsedQuery} from 'url';
 import * as http from "http";
 import {WebsitesApiClientBuilder} from '@ringpublishing/graphql-api-client';
-import {WebsitesApiClient} from '@ringpublishing/graphql-api-client-got';
 import {gql} from 'graphql-tag';
 import {DocumentNode} from 'graphql/language/ast';
 import {
@@ -13,7 +12,6 @@ import {
 import {ApolloQueryResult} from "@apollo/client";
 import {RingDataLayer} from "./RingDataLayer";
 import os from 'os';
-import {ApolloClient, HttpLink, InMemoryCache} from '@apollo/client/core';
 
 export type MiddlewareBeforeResponseToReturn = { responseToReturn: Response };
 
@@ -329,6 +327,7 @@ export class BootServer {
             }
 
             gql.resetCaches();
+
             if (this.enableDebug) {
                 console.log(`Website API request '${domain}${pathname}' for '${variant}' variant took ${performance.now() - perf}ms`)
             }
