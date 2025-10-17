@@ -325,7 +325,7 @@ export class BootServer {
 
             }
 
-            gql.resetCaches();
+            //gql.resetCaches();
 
             if (this.enableDebug) {
                 console.log(`Website API request '${domain}${pathname}' for '${variant}' variant took ${performance.now() - perf}ms`)
