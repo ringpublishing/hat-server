@@ -16,8 +16,7 @@
 		"@ringieraxelspringer/tsconfig": "^4.0.0",
 		"@ringpublishing/graphql-api-client": "^4.2.0",
 		"@types/http-server": "^0.12.1",
-		"@types/node": "*",
-        "@apollo/client": "3.12.6"
+		"@types/node": "*"
 	},
 	"devDependencies": {
 		"typescript": "~4.7.4",
