@@ -11,6 +11,7 @@ import {
 import {ApolloQueryResult} from "@apollo/client";
 import {RingDataLayer} from "./RingDataLayer";
 import os from 'os';
+import {WebsitesApiClient} from "@ringpublishing/graphql-api-client-got";
 
 export type MiddlewareBeforeResponseToReturn = { responseToReturn: Response };
 
@@ -276,17 +277,13 @@ export class BootServer {
         const pubId = arrUrl[arrUrl.length - 1];
 
         if (this._shouldMakeRequestToWebsiteAPIOnThisRequestHook(req)) {
-                const websitesApiApolloClient = new WebsitesApiClientBuilder({
+            if (!global.websitesApiGotClient) {
+                 global.websitesApiGotClient = new WebsitesApiClient({
                     accessKey: WEBSITE_API_PUBLIC,
                     secretKey: WEBSITE_API_SECRET,
                     spaceUuid: WEBSITE_API_NAMESPACE_ID
-                }).setApolloClientAdditionalOptions({
-                    defaultOptions:{
-                        watchQuery: { fetchPolicy: "no-cache" },
-                        query: { fetchPolicy: "no-cache" },
-                    }
-                }).buildApolloClient();
-
+                });
+            }
 
 
             let perf = 0;
@@ -304,8 +301,8 @@ export class BootServer {
                     if (global['monitoringProvider'] && global['monitoringProvider'].counter) {
                         global['monitoringProvider'].counter('info.HatServer_applyWebsiteAPILogic.apiCall');
                     }
-                    const newResponse = await websitesApiApolloClient.query(
-                        {query: this._prepareCustomGraphQLQueryToWebsiteAPIHook(url, variant), fetchPolicy: "no-cache"}
+                    const newResponse = await global.websitesApiGotClient.query(
+                        this._prepareCustomGraphQLQueryToWebsiteAPIHook(url, variant)
                         );
                     this.cacheProvider.set(cacheKey, newResponse, HAT_SERVER_WEBSITE_API_TTL, ['pubId_' + pubId]);
                 });
@@ -313,8 +310,8 @@ export class BootServer {
                 if (global['monitoringProvider'] && global['monitoringProvider'].counter) {
                     global['monitoringProvider'].counter('info.HatServer_applyWebsiteAPILogic.apiCall');
                 }
-                response = await websitesApiApolloClient.query(
-                    {query: this._prepareCustomGraphQLQueryToWebsiteAPIHook(url, variant), fetchPolicy: "no-cache"}
+                response = await global.websitesApiGotClient.query(
+                    this._prepareCustomGraphQLQueryToWebsiteAPIHook(url, variant)
                 ) as ApolloQueryResult<DefaultHatSite>;
 
 
@@ -325,7 +322,7 @@ export class BootServer {
 
             }
 
-            //gql.resetCaches();
+            gql.resetCaches();
 
             if (this.enableDebug) {
                 console.log(`Website API request '${domain}${pathname}' for '${variant}' variant took ${performance.now() - perf}ms`)
