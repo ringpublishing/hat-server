@@ -46,7 +46,7 @@ export class BootServer {
     readonly _shouldMakeRequestToWebsiteAPIOnThisRequestHook: (req: http.IncomingMessage) => boolean;
     readonly _prepareCustomGraphQLQueryToWebsiteAPIHook: (url: string, variantId: string) => DocumentNode;
     private ringDataLayer: RingDataLayer;
-    private apolloClientTimeout: number;
+    private gotClientTimeout: number;
     private use304Functionality: boolean;
     private use304FunctionalityTTL_IN_SECONDS: number;
 
@@ -58,7 +58,7 @@ export class BootServer {
                     useAccRdl = true as boolean,
                     enableDebug = false as boolean,
                     healthCheckPathname = '/_healthcheck' as string,
-                    apolloClientTimeout = 10000 as number,
+                    gotClientTimeout = 10000 as number,
                     onRequest = () => {
                     },
                     additionalDataInHatControllerParams = () => {
@@ -102,7 +102,7 @@ export class BootServer {
         this.enableDebug = enableDebug;
         this.healthCheckPathname = healthCheckPathname;
         this.ringDataLayer = new RingDataLayer();
-        this.apolloClientTimeout = apolloClientTimeout;
+        this.gotClientTimeout = gotClientTimeout;
         this.cacheProvider = cacheProvider;
         this.use304Functionality = use304Functionality;
         this.use304FunctionalityTTL_IN_SECONDS = use304FunctionalityTTL_IN_SECONDS;
@@ -281,7 +281,8 @@ export class BootServer {
                 global.websitesApiGotClient = new WebsitesApiClient({
                     accessKey: WEBSITE_API_PUBLIC,
                     secretKey: WEBSITE_API_SECRET,
-                    spaceUuid: WEBSITE_API_NAMESPACE_ID
+                    spaceUuid: WEBSITE_API_NAMESPACE_ID,
+                    timeout: this.gotClientTimeout
                 });
             }
 
