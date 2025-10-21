@@ -1,6 +1,6 @@
 {
     "name": "hat-server",
-    "version": "2.8.1",
+    "version": "2.8.2",
     "description": "Head App Template - server",
     "license": "MIT",
     "repository": {},
@@ -14,7 +14,7 @@
     "private": false,
     "dependencies": {
         "@ringpublishing/graphql-api-client": "^4.2.0",
-        "@ringpublishing/graphql-api-client-got": "^2.2.0",
+        "@ringpublishing/graphql-api-client-got": "^2.3.0",
         "@types/http-server": "^0.12.1",
         "@types/node": "*"
     },

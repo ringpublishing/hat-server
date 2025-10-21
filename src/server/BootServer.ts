@@ -282,7 +282,8 @@ export class BootServer {
                     accessKey: WEBSITE_API_PUBLIC,
                     secretKey: WEBSITE_API_SECRET,
                     spaceUuid: WEBSITE_API_NAMESPACE_ID,
-                    timeout: this.gotClientTimeout
+                    timeout: this.gotClientTimeout,
+                    connectTimeout: this.gotClientTimeout
                 });
             }
 
