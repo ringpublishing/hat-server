@@ -75,10 +75,21 @@ export class BootServer {
                         get: () => {
                             return null
                         },
-                        runCallbackIfTimeStampHasExpired: () => {
+                        isExpired: () => {
+                            return true;
                         },
                         getTTL: () => {
                             return 60
+                        },
+                        getDecoratedCachedObject(key: any) {
+                            return {
+                                value: null,
+                                ttl: undefined,
+                                expirationTimestamp: undefined,
+                            }
+                        },
+                        getExpirationTimestamp(key: any) {
+                            return undefined;
                         }
                     },
                     use304Functionality = false as boolean,
@@ -296,30 +307,29 @@ export class BootServer {
 
             const url = `${domain}${pathname}`;
             const cacheKey = `${domain}${pathname}${variant}`;
-            let response = await this.cacheProvider.get(cacheKey);
+            let response = await this.cacheProvider.getDecoratedCachedObject(cacheKey);
 
-            if (response) {
-                this.cacheProvider.runCallbackIfTimeStampHasExpired(cacheKey, async () => {
+            if (response.value) {
+                if (this.cacheProvider.isExpired(response, HAT_SERVER_WEBSITE_API_TTL)) {
                     if (global['monitoringProvider'] && global['monitoringProvider'].counter) {
                         global['monitoringProvider'].counter('info.HatServer_applyWebsiteAPILogic.apiCall');
                     }
-                    const newResponse = await global.websitesApiGotClient.query(
-                        this._prepareCustomGraphQLQueryToWebsiteAPIHook(url, variant)
-                    );
-                    this.cacheProvider.set(cacheKey, newResponse, HAT_SERVER_WEBSITE_API_TTL, ['pubId_' + pubId]);
-                });
+                    global.websitesApiGotClient.query(this._prepareCustomGraphQLQueryToWebsiteAPIHook(url, variant)).then((newResponse) => {
+                        this.cacheProvider.set(cacheKey, newResponse, HAT_SERVER_WEBSITE_API_TTL, ['pubId_' + pubId]);
+                    }).catch((err) => {
+                        console.error('Website API call error:', err);
+                        global['monitoringProvider'].counter('info.HatServer_applyWebsiteAPILogic.apiCallError');
+                    })
+                }
             } else {
                 if (global['monitoringProvider'] && global['monitoringProvider'].counter) {
                     global['monitoringProvider'].counter('info.HatServer_applyWebsiteAPILogic.apiCall');
                 }
-                response = await global.websitesApiGotClient.query(
-                    this._prepareCustomGraphQLQueryToWebsiteAPIHook(url, variant)
-                ) as ApolloQueryResult<DefaultHatSite>;
-
-                if (!this.use304Functionality) {
-                    this.cacheProvider.set(cacheKey, response, HAT_SERVER_WEBSITE_API_TTL, ['pubId_' + pubId]);
-                }
-
+                global.websitesApiGotClient.query(this._prepareCustomGraphQLQueryToWebsiteAPIHook(url, variant)).then((response) => {
+                    if (!this.use304Functionality) {
+                        this.cacheProvider.set(cacheKey, response, HAT_SERVER_WEBSITE_API_TTL, ['pubId_' + pubId]);
+                    }
+                })
             }
 
             gql.resetCaches();
