@@ -310,7 +310,6 @@ export class BootServer {
             let responseValue: any = null;
             if (this.cacheProvider.runCallbackIfTimeStampHasExpired) {
                 let response = await this.cacheProvider.get(cacheKey);
-                responseValue = {value: response};
 
                 if (response) {
                     this.cacheProvider.runCallbackIfTimeStampHasExpired(cacheKey, async () => {
@@ -334,9 +333,9 @@ export class BootServer {
                         this.cacheProvider.set(cacheKey, response, HAT_SERVER_WEBSITE_API_TTL, ['pubId_' + pubId]);
                     }
                 }
+                responseValue = {value: response};
             } else {
                 let response = await this.cacheProvider.getDecoratedCachedObject(cacheKey);
-                responseValue = response;
                 if (response.value) {
                     if (this.cacheProvider.isExpired(response, HAT_SERVER_WEBSITE_API_TTL)) {
                         if (global['monitoringProvider'] && global['monitoringProvider'].counter) {
@@ -353,13 +352,14 @@ export class BootServer {
                     if (global['monitoringProvider'] && global['monitoringProvider'].counter) {
                         global['monitoringProvider'].counter('info.HatServer_applyWebsiteAPILogic.apiCall');
                     }
-                    global.websitesApiGotClient.query(this._prepareCustomGraphQLQueryToWebsiteAPIHook(url, variant)).then((response) => {
-                        if (!this.use304Functionality) {
-                            this.cacheProvider.set(cacheKey, response, HAT_SERVER_WEBSITE_API_TTL, ['pubId_' + pubId]);
-                        }
-                    })
+                    response.value = await global.websitesApiGotClient.query(this._prepareCustomGraphQLQueryToWebsiteAPIHook(url, variant));
+                    if (!this.use304Functionality) {
+                        this.cacheProvider.set(cacheKey, response, HAT_SERVER_WEBSITE_API_TTL, ['pubId_' + pubId]);
+                    }
                 }
+                responseValue = response;
             }
+
 
             gql.resetCaches();
 
