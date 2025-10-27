@@ -172,7 +172,7 @@ export type Scalars = {
 export interface CacheService {
     set(key: any, value: any, TTL: null | number | undefined, tags?: string[] | null | boolean): void;
     get(key: any): void;
-    getDecoratedCachedObject(key: any): {ttl: number | undefined, value: any, expirationTimestamp: number | undefined};
+    getDecoratedCachedObject(key: any): Promise<{ttl: number | undefined, value: any, expirationTimestamp: number | undefined}>
     isExpired(rawCachedObject: {ttl: number | undefined, value: any, expirationTimestamp: number | undefined}, ttl: number | null): boolean;
     getTTL(key: any): number | undefined;
     getExpirationTimestamp(key: any): number | undefined;

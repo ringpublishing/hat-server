@@ -81,9 +81,9 @@ export class BootServer {
                         getTTL: () => {
                             return 60
                         },
-                        getDecoratedCachedObject(key: any) {
+                        async getDecoratedCachedObject(key: any) {
                             return {
-                                value: null,
+                                value: this.get(key),
                                 ttl: undefined,
                                 expirationTimestamp: undefined,
                             }
@@ -338,13 +338,13 @@ export class BootServer {
                 console.log(`Website API request '${domain}${pathname}' for '${variant}' variant took ${performance.now() - perf}ms`)
             }
 
-            if (this.useWebsitesAPIRedirects && response.data?.site?.headers?.location && response.data?.site?.statusCode) {
-                this._handleWebsitesAPIRedirects(req, res, response.data?.site.headers.location, response.data?.site.statusCode);
+            if (this.useWebsitesAPIRedirects && response.value.data?.site?.headers?.location && response.value.data?.site?.statusCode) {
+                this._handleWebsitesAPIRedirects(req, res, response.value.data?.site.headers.location, response.value.data?.site.statusCode);
                 responseEnded = true;
             }
 
             if (this.useHatControllerParams) {
-                hatControllerParamsInstance.gqlResponse = response;
+                hatControllerParamsInstance.gqlResponse = response.value;
             }
         }
 
