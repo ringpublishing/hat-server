@@ -318,7 +318,9 @@ export class BootServer {
                         this.cacheProvider.set(cacheKey, newResponse, HAT_SERVER_WEBSITE_API_TTL, ['pubId_' + pubId]);
                     }).catch((err) => {
                         console.error('Website API call error:', err);
-                        global['monitoringProvider'].counter('info.HatServer_applyWebsiteAPILogic.apiCallError');
+                        if (global['monitoringProvider'] && global['monitoringProvider'].counter) {
+                            global['monitoringProvider'].counter('info.HatServer_applyWebsiteAPILogic.apiCallError');
+                        }
                     })
                 }
             } else {
