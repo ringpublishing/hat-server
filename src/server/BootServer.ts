@@ -75,10 +75,21 @@ export class BootServer {
                         get: () => {
                             return null
                         },
-                        runCallbackIfTimeStampHasExpired: () => {
+                        isExpired: () => {
+                            return true;
                         },
                         getTTL: () => {
                             return 60
+                        },
+                        async getDecoratedCachedObject(key: any) {
+                            return {
+                                value: this.get(key),
+                                ttl: undefined,
+                                expirationTimestamp: undefined,
+                            }
+                        },
+                        getExpirationTimestamp(key: any) {
+                            return undefined;
                         }
                     },
                     use304Functionality = false as boolean,
@@ -296,30 +307,30 @@ export class BootServer {
 
             const url = `${domain}${pathname}`;
             const cacheKey = `${domain}${pathname}${variant}`;
-            let response = await this.cacheProvider.get(cacheKey);
 
-            if (response) {
-                this.cacheProvider.runCallbackIfTimeStampHasExpired(cacheKey, async () => {
+            let response = await this.cacheProvider.getDecoratedCachedObject(cacheKey);
+            if (response.value) {
+                if (this.cacheProvider.isExpired(response, HAT_SERVER_WEBSITE_API_TTL)) {
                     if (global['monitoringProvider'] && global['monitoringProvider'].counter) {
                         global['monitoringProvider'].counter('info.HatServer_applyWebsiteAPILogic.apiCall');
                     }
-                    const newResponse = await global.websitesApiGotClient.query(
-                        this._prepareCustomGraphQLQueryToWebsiteAPIHook(url, variant)
-                    );
-                    this.cacheProvider.set(cacheKey, newResponse, HAT_SERVER_WEBSITE_API_TTL, ['pubId_' + pubId]);
-                });
+                    global.websitesApiGotClient.query(this._prepareCustomGraphQLQueryToWebsiteAPIHook(url, variant)).then((newResponse) => {
+                        this.cacheProvider.set(cacheKey, newResponse, HAT_SERVER_WEBSITE_API_TTL, ['pubId_' + pubId]);
+                    }).catch((err) => {
+                        console.error('Website API call error:', err);
+                        if (global['monitoringProvider'] && global['monitoringProvider'].counter) {
+                            global['monitoringProvider'].counter('info.HatServer_applyWebsiteAPILogic.apiCallError');
+                        }
+                    })
+                }
             } else {
                 if (global['monitoringProvider'] && global['monitoringProvider'].counter) {
                     global['monitoringProvider'].counter('info.HatServer_applyWebsiteAPILogic.apiCall');
                 }
-                response = await global.websitesApiGotClient.query(
-                    this._prepareCustomGraphQLQueryToWebsiteAPIHook(url, variant)
-                ) as ApolloQueryResult<DefaultHatSite>;
-
+                response.value = await global.websitesApiGotClient.query(this._prepareCustomGraphQLQueryToWebsiteAPIHook(url, variant));
                 if (!this.use304Functionality) {
-                    this.cacheProvider.set(cacheKey, response, HAT_SERVER_WEBSITE_API_TTL, ['pubId_' + pubId]);
+                    this.cacheProvider.set(cacheKey, response.value, HAT_SERVER_WEBSITE_API_TTL, ['pubId_' + pubId]);
                 }
-
             }
 
             gql.resetCaches();
@@ -328,13 +339,13 @@ export class BootServer {
                 console.log(`Website API request '${domain}${pathname}' for '${variant}' variant took ${performance.now() - perf}ms`)
             }
 
-            if (this.useWebsitesAPIRedirects && response.data?.site?.headers?.location && response.data?.site?.statusCode) {
-                this._handleWebsitesAPIRedirects(req, res, response.data?.site.headers.location, response.data?.site.statusCode);
+            if (this.useWebsitesAPIRedirects && response.value.data?.site?.headers?.location && response.value.data?.site?.statusCode) {
+                this._handleWebsitesAPIRedirects(req, res, response.value.data?.site.headers.location, response.value.data?.site.statusCode);
                 responseEnded = true;
             }
 
             if (this.useHatControllerParams) {
-                hatControllerParamsInstance.gqlResponse = response;
+                hatControllerParamsInstance.gqlResponse = response.value;
             }
         }
 

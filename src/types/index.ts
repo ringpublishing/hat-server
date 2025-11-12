@@ -66,6 +66,7 @@ export interface BootServerConfig {
     cacheProvider?: CacheService,
     use304Functionality?: boolean,
     use304FunctionalityTTL_IN_SECONDS?: number,
+    gotClientTimeout?: number,
 }
 
 export interface DefaultHatControllerParams {
@@ -169,9 +170,11 @@ export type Scalars = {
 }
 
 export interface CacheService {
-    set(key: any, value: any, TTL: null | number | undefined, tags: string[] | null | boolean): void;
+    set(key: any, value: any, TTL: null | number | undefined, tags?: string[] | null | boolean): void;
     get(key: any): any;
-    runCallbackIfTimeStampHasExpired(key: any, callback: Function): void;
-    getTTL(key): number;
+    getDecoratedCachedObject(key: any): Promise<{ttl: number | undefined, value: any, expirationTimestamp: number | undefined}>;
+    isExpired(rawCachedObject: {ttl: number | undefined, value: any, expirationTimestamp: number | undefined}, ttl: number | null): boolean;
+    getTTL(key: any): number | undefined;
+    getExpirationTimestamp(key: any): number | undefined;
 }
 
