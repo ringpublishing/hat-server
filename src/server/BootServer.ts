@@ -216,6 +216,16 @@ export class BootServer {
             console.log(`Request ${req.url} took ${performance.now() - perf}ms`)
         }
 
+        if (this.useHatControllerParams && !hatControllerParamsInstance.gqlResponse) {
+            if (global['monitoringProvider'] && global['monitoringProvider'].counter) {
+                global['monitoringProvider'].counter('info.HatServer_requestListener.siteDataMissing');
+            }
+            console.error(`Site data is missing in HatControllerParams for url: ${req.url}`);
+            return {
+                responseToReturn: new Response('Site data is missing', {status: 503})
+            }
+        }
+
         return req;
     }
 
