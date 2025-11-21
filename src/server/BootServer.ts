@@ -216,6 +216,16 @@ export class BootServer {
             console.log(`Request ${req.url} took ${performance.now() - perf}ms`)
         }
 
+        if (this.useHatControllerParams && !hatControllerParamsInstance.gqlResponse) {
+            if (global['monitoringProvider'] && global['monitoringProvider'].counter) {
+                global['monitoringProvider'].counter('info.HatServer_requestListener.siteDataMissing');
+            }
+            console.error(`Site data is missing in HatControllerParams for url: ${req.url}`);
+            return {
+                responseToReturn: new Response('Site data is missing', {status: 503})
+            }
+        }
+
         return req;
     }
 
@@ -288,17 +298,6 @@ export class BootServer {
         const pubId = arrUrl[arrUrl.length - 1];
 
         if (this._shouldMakeRequestToWebsiteAPIOnThisRequestHook(req)) {
-            if (!global.websitesApiGotClient) {
-                global.websitesApiGotClient = new WebsitesApiClient({
-                    accessKey: WEBSITE_API_PUBLIC,
-                    secretKey: WEBSITE_API_SECRET,
-                    spaceUuid: WEBSITE_API_NAMESPACE_ID,
-                    timeout: this.gotClientTimeout,
-                    connectTimeout: this.gotClientTimeout
-                });
-            }
-
-
             let perf = 0;
 
             if (this.enableDebug) {
@@ -311,25 +310,18 @@ export class BootServer {
             let response = await this.cacheProvider.getDecoratedCachedObject(cacheKey);
             if (response.value) {
                 if (this.cacheProvider.isExpired(response, HAT_SERVER_WEBSITE_API_TTL)) {
-                    if (global['monitoringProvider'] && global['monitoringProvider'].counter) {
-                        global['monitoringProvider'].counter('info.HatServer_applyWebsiteAPILogic.apiCall');
-                    }
-                    global.websitesApiGotClient.query(this._prepareCustomGraphQLQueryToWebsiteAPIHook(url, variant)).then((newResponse) => {
-                        this.cacheProvider.set(cacheKey, newResponse, HAT_SERVER_WEBSITE_API_TTL, ['pubId_' + pubId]);
-                    }).catch((err) => {
-                        console.error('Website API call error:', err);
-                        if (global['monitoringProvider'] && global['monitoringProvider'].counter) {
-                            global['monitoringProvider'].counter('info.HatServer_applyWebsiteAPILogic.apiCallError');
+                    this._callToWebsitesApi(url, variant).then((newResponse) => {
+                        if (newResponse) {
+                            this.cacheProvider.set(cacheKey, newResponse, HAT_SERVER_WEBSITE_API_TTL, ['pubId_' + pubId]);
                         }
                     })
                 }
             } else {
-                if (global['monitoringProvider'] && global['monitoringProvider'].counter) {
-                    global['monitoringProvider'].counter('info.HatServer_applyWebsiteAPILogic.apiCall');
-                }
-                response.value = await global.websitesApiGotClient.query(this._prepareCustomGraphQLQueryToWebsiteAPIHook(url, variant));
+                response.value = await this._callToWebsitesApi(url, variant);
                 if (!this.use304Functionality) {
-                    this.cacheProvider.set(cacheKey, response.value, HAT_SERVER_WEBSITE_API_TTL, ['pubId_' + pubId]);
+                    if (response.value) {
+                        this.cacheProvider.set(cacheKey, response.value, HAT_SERVER_WEBSITE_API_TTL, ['pubId_' + pubId]);
+                    }
                 }
             }
 
@@ -339,8 +331,8 @@ export class BootServer {
                 console.log(`Website API request '${domain}${pathname}' for '${variant}' variant took ${performance.now() - perf}ms`)
             }
 
-            if (this.useWebsitesAPIRedirects && response.value.data?.site?.headers?.location && response.value.data?.site?.statusCode) {
-                this._handleWebsitesAPIRedirects(req, res, response.value.data?.site.headers.location, response.value.data?.site.statusCode);
+            if (this.useWebsitesAPIRedirects && response.value?.data?.site?.headers?.location && response.value?.data?.site?.statusCode) {
+                this._handleWebsitesAPIRedirects(req, res, response.value?.data?.site.headers.location, response.value?.data?.site.statusCode);
                 responseEnded = true;
             }
 
@@ -350,6 +342,42 @@ export class BootServer {
         }
 
         return responseEnded;
+    }
+
+    async _callToWebsitesApi(url: string, variant: string): Promise<any | null> {
+        if (!global.websitesApiGotClient) {
+            global.websitesApiGotClient = new WebsitesApiClient({
+                accessKey: WEBSITE_API_PUBLIC,
+                secretKey: WEBSITE_API_SECRET,
+                spaceUuid: WEBSITE_API_NAMESPACE_ID,
+                timeout: this.gotClientTimeout,
+                connectTimeout: this.gotClientTimeout
+            });
+        }
+        const query = this._prepareCustomGraphQLQueryToWebsiteAPIHook(url, variant);
+
+        try {
+            if (global['monitoringProvider'] && global['monitoringProvider'].counter) {
+                global['monitoringProvider'].counter('info.HatServer_callToWebsitesApi.apiCall');
+            }
+            const newResponse = await global.websitesApiGotClient.query(query);
+
+            if (newResponse.errors || newResponse.error) {
+                console.error('Hat-server: Websites Api error:', query.loc?.source.body, newResponse.errors, newResponse.error);
+                if (global['monitoringProvider'] && global['monitoringProvider'].counter) {
+                    global['monitoringProvider'].counter('info.HatServer_callToWebsitesApi.apiCallError');
+                }
+                return newResponse.data ? newResponse : null;
+            }
+
+            return newResponse;
+        } catch (err) {
+            console.error('Hat-server: Website API call catch error:', err);
+            if (global['monitoringProvider'] && global['monitoringProvider'].counter) {
+                global['monitoringProvider'].counter('info.HatServer_callToWebsitesApi.apiCallCatchError');
+            }
+            return null;
+        }
     }
 
     _shouldMakeRequestToWebsiteAPIOnThisRequest(req) {
