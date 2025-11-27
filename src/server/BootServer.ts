@@ -365,16 +365,25 @@ export class BootServer {
             if (newResponse.errors || newResponse.error) {
                 console.error('Hat-server: Websites Api error:', query.loc?.source.body, newResponse.errors, newResponse.error);
                 if (global['monitoringProvider'] && global['monitoringProvider'].counter) {
-                    global['monitoringProvider'].counter('info.HatServer_callToWebsitesApi.apiCallError');
+                    global['monitoringProvider'].counter('error.HatServer_callToWebsitesApi.apiCallError');
                 }
-                return newResponse.data ? newResponse : null;
+
+                if (newResponse.data) {
+                    return newResponse;
+                }
+
+                if (global['monitoringProvider'] && global['monitoringProvider'].counter) {
+                    global['monitoringProvider'].counter('error.HatServer_callToWebsitesApi.apiCallNoDataInResponse');
+                }
+
+                return null;
             }
 
             return newResponse;
         } catch (err) {
             console.error('Hat-server: Website API call catch error:', err);
             if (global['monitoringProvider'] && global['monitoringProvider'].counter) {
-                global['monitoringProvider'].counter('info.HatServer_callToWebsitesApi.apiCallCatchError');
+                global['monitoringProvider'].counter('error.HatServer_callToWebsitesApi.apiCallCatchError');
             }
             return null;
         }
