@@ -1,7 +1,6 @@
 import {parse, UrlWithParsedQuery} from 'url';
 import * as http from "http";
-import {gql} from '@ringpublishing/graphql-api-client';
-import {WebsitesApiClient} from "@ringpublishing/graphql-api-client-got";
+import {WebsitesApiClient, gql} from "@ringpublishing/graphql-api-client-got";
 import {DocumentNode} from 'graphql/language/ast';
 import {
     BootServerConfig, CacheService,

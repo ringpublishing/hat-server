@@ -13,8 +13,7 @@
     },
     "private": false,
     "dependencies": {
-        "@ringpublishing/graphql-api-client": "^4.2.0",
-        "@ringpublishing/graphql-api-client-got": "^2.3.0",
+        "@ringpublishing/graphql-api-client-got": "^2.3.1",
         "@types/http-server": "^0.12.1",
         "@types/node": "*"
     },
