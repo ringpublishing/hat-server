@@ -24,6 +24,7 @@ const NEXT_PUBLIC_WEBSITE_API_VARIANT = process.env.NEXT_PUBLIC_WEBSITE_API_VARI
 const HAT_SERVER_WEBSITE_API_TTL = Number(process.env.HAT_SERVER_WEBSITE_API_TTL) || 60;
 const HAT_SERVER_SHOW_URLS_IN_CONSOLE = process.env.HAT_SERVER_SHOW_URLS_IN_CONSOLE || false;
 const RESPONSE_HEADER_CACHE_CONTROL_MAX_AGE = Number(process.env.RESPONSE_HEADER_CACHE_CONTROL_MAX_AGE) || 60;
+const GQL_CACHE_RESET_INTERVAL_SECONDS = Number(process.env.GQL_CACHE_RESET_INTERVAL_SECONDS) || 300;
 // process.argv[3] -> cde app start support
 const cdePort = Number(process.argv[3]);
 const PORT = process.env.PORT || cdePort || 4321;
@@ -48,6 +49,7 @@ export class BootServer {
     private gotClientTimeout: number;
     private use304Functionality: boolean;
     private use304FunctionalityTTL_IN_SECONDS: number;
+    private gqlResetCachesTimestamp: number;
 
     constructor({
                     useDefaultHeaders = true as boolean,
@@ -116,6 +118,7 @@ export class BootServer {
         this.cacheProvider = cacheProvider;
         this.use304Functionality = use304Functionality;
         this.use304FunctionalityTTL_IN_SECONDS = use304FunctionalityTTL_IN_SECONDS;
+        this.gqlResetCachesTimestamp = new Date().getTime();
 
         this._onRequestHook = (req: HatRequest, res) => {
             onRequest(req, res);
@@ -324,7 +327,10 @@ export class BootServer {
                 }
             }
 
-            gql.resetCaches();
+            if (this.gqlResetCachesTimestamp < new Date().getTime()) {
+                gql.resetCaches();
+                this.gqlResetCachesTimestamp = new Date().getTime() + GQL_CACHE_RESET_INTERVAL_SECONDS * 1000;
+            }
 
             if (this.enableDebug) {
                 console.log(`Website API request '${domain}${pathname}' for '${variant}' variant took ${performance.now() - perf}ms`)
