@@ -28,6 +28,7 @@ const GQL_CACHE_RESET_INTERVAL_SECONDS = Number(process.env.GQL_CACHE_RESET_INTE
 // process.argv[3] -> cde app start support
 const cdePort = Number(process.argv[3]);
 const PORT = process.env.PORT || cdePort || 4321;
+let gqlResetCachesTimestamp = new Date().getTime();
 
 export class BootServer {
     protected readonly isDev: boolean;
@@ -49,7 +50,6 @@ export class BootServer {
     private gotClientTimeout: number;
     private use304Functionality: boolean;
     private use304FunctionalityTTL_IN_SECONDS: number;
-    private gqlResetCachesTimestamp: number;
 
     constructor({
                     useDefaultHeaders = true as boolean,
@@ -118,7 +118,6 @@ export class BootServer {
         this.cacheProvider = cacheProvider;
         this.use304Functionality = use304Functionality;
         this.use304FunctionalityTTL_IN_SECONDS = use304FunctionalityTTL_IN_SECONDS;
-        this.gqlResetCachesTimestamp = new Date().getTime();
 
         this._onRequestHook = (req: HatRequest, res) => {
             onRequest(req, res);
@@ -327,9 +326,9 @@ export class BootServer {
                 }
             }
 
-            if (this.gqlResetCachesTimestamp < new Date().getTime()) {
+            if (gqlResetCachesTimestamp < new Date().getTime()) {
                 gql.resetCaches();
-                this.gqlResetCachesTimestamp = new Date().getTime() + GQL_CACHE_RESET_INTERVAL_SECONDS * 1000;
+                gqlResetCachesTimestamp = new Date().getTime() + GQL_CACHE_RESET_INTERVAL_SECONDS * 1000;
             }
 
             if (this.enableDebug) {
