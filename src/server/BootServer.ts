@@ -24,9 +24,11 @@ const NEXT_PUBLIC_WEBSITE_API_VARIANT = process.env.NEXT_PUBLIC_WEBSITE_API_VARI
 const HAT_SERVER_WEBSITE_API_TTL = Number(process.env.HAT_SERVER_WEBSITE_API_TTL) || 60;
 const HAT_SERVER_SHOW_URLS_IN_CONSOLE = process.env.HAT_SERVER_SHOW_URLS_IN_CONSOLE || false;
 const RESPONSE_HEADER_CACHE_CONTROL_MAX_AGE = Number(process.env.RESPONSE_HEADER_CACHE_CONTROL_MAX_AGE) || 60;
+const GQL_CACHE_RESET_INTERVAL_SECONDS = Number(process.env.GQL_CACHE_RESET_INTERVAL_SECONDS) || 300;
 // process.argv[3] -> cde app start support
 const cdePort = Number(process.argv[3]);
 const PORT = process.env.PORT || cdePort || 4321;
+let gqlResetCachesTimestamp = new Date().getTime();
 
 export class BootServer {
     protected readonly isDev: boolean;
@@ -324,7 +326,10 @@ export class BootServer {
                 }
             }
 
-            gql.resetCaches();
+            if (gqlResetCachesTimestamp < new Date().getTime()) {
+                gql.resetCaches();
+                gqlResetCachesTimestamp = new Date().getTime() + GQL_CACHE_RESET_INTERVAL_SECONDS * 1000;
+            }
 
             if (this.enableDebug) {
                 console.log(`Website API request '${domain}${pathname}' for '${variant}' variant took ${performance.now() - perf}ms`)
