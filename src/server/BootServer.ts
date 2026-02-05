@@ -453,6 +453,9 @@ export class BootServer {
                     }
                     category {
                         id
+                        data {
+                            name
+                        }
                     }
                     id
                 }
@@ -461,6 +464,13 @@ export class BootServer {
                     ...on Story {
                         id,
                         title,
+                        leads {
+                            title
+                            role {
+                                name
+                                code
+                            }
+                        },
                         mainPublicationPoint {
                             id
                         },
