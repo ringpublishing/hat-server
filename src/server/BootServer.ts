@@ -463,6 +463,7 @@ export class BootServer {
                     __typename
                     ...on Story {
                         id,
+                        title,
                         mainPublicationPoint {
                             id
                         },
