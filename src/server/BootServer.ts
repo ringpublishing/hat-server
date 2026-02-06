@@ -453,6 +453,9 @@ export class BootServer {
                     }
                     category {
                         id
+                        data {
+                            name
+                        }
                     }
                     id
                 }
