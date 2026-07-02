@@ -67,6 +67,10 @@ export interface BootServerConfig {
     use304Functionality?: boolean,
     use304FunctionalityTTL_IN_SECONDS?: number,
     gotClientTimeout?: number,
+    /**
+     * Delimiter for parsing URL path segments (default: '/')
+     */
+    urlPathDelimiter?: string,
 }
 
 export interface DefaultHatControllerParams {

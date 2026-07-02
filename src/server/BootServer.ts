@@ -50,6 +50,7 @@ export class BootServer {
     private gotClientTimeout: number;
     private use304Functionality: boolean;
     private use304FunctionalityTTL_IN_SECONDS: number;
+    private urlPathDelimiter: string;
 
     constructor({
                     useDefaultHeaders = true as boolean,
@@ -94,7 +95,8 @@ export class BootServer {
                         }
                     },
                     use304Functionality = false as boolean,
-                    use304FunctionalityTTL_IN_SECONDS = 86400 as number
+                    use304FunctionalityTTL_IN_SECONDS = 86400 as number,
+                    urlPathDelimiter = '/' as string
                 }: BootServerConfig) {
         if (useWebsitesAPI && (!WEBSITE_API_PUBLIC || !WEBSITE_API_SECRET || !WEBSITE_API_NAMESPACE_ID)) {
             throw `Missing: ${(!WEBSITE_API_PUBLIC && 'WEBSITE_API_PUBLIC') || ''}${(!WEBSITE_API_SECRET && ' WEBSITE_API_SECRET') || ''}${(!WEBSITE_API_NAMESPACE_ID && ' WEBSITE_API_NAMESPACE_ID') || ''}`;
@@ -118,6 +120,7 @@ export class BootServer {
         this.cacheProvider = cacheProvider;
         this.use304Functionality = use304Functionality;
         this.use304FunctionalityTTL_IN_SECONDS = use304FunctionalityTTL_IN_SECONDS;
+        this.urlPathDelimiter = urlPathDelimiter;
 
         this._onRequestHook = (req: HatRequest, res) => {
             onRequest(req, res);
@@ -295,7 +298,7 @@ export class BootServer {
 
     async _applyWebsiteAPILogic(pathname, req, res, hatControllerParamsInstance, variant: string, domain: string) {
         let responseEnded = false;
-        const arrUrl = pathname.split('/');
+        const arrUrl = pathname.split(this.urlPathDelimiter);
         const pubId = arrUrl[arrUrl.length - 1];
 
         if (this._shouldMakeRequestToWebsiteAPIOnThisRequestHook(req)) {
