@@ -367,7 +367,8 @@ export class BootServer {
             if (global['monitoringProvider'] && global['monitoringProvider'].counter) {
                 global['monitoringProvider'].counter('info.HatServer_callToWebsitesApi.apiCall');
             }
-            const newResponse = await global.websitesApiGotClient.query(query);
+            const rawRequest = await global.websitesApiGotClient.query(query);
+            const newResponse = rawRequest.body;
 
             if (newResponse.errors || newResponse.error) {
                 console.error('Hat-server: Websites Api error:', query.loc?.source.body, newResponse.errors, newResponse.error);
