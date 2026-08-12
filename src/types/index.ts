@@ -2,7 +2,7 @@ import { ApolloQueryResult } from "@apollo/client";
 import http from "http";
 import {DocumentNode} from "graphql/language/ast";
 import {UrlWithParsedQuery} from "url";
-import {Site} from "@ringpublishing/graphql-api-client-got/lib/types/websites-api";
+import {Site} from "@ringpublishing/graphql-api-client-got/dist/types/websites-api";
 
 export interface BootServerConfig {
     /**
